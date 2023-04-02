@@ -90,14 +90,14 @@ async def set_user(message: types.Message, state: FSMContext):
         env_lines = env_file.readlines()
 
         for i, line in enumerate(env_lines):
-            if line.startswith('USERS_IDS'):
+            if line.startswith('USERS'):
 
-                users = line[len('USERS_IDS='):].strip().split(',')
+                users = line[len('USERS='):].strip().split(',')
 
                 if message.text not in users:
                     users.append(message.text)
 
-                env_lines[i] = f"USERS_IDS={','.join(users)}\n"
+                env_lines[i] = f"USERS={','.join(users)}\n"
                 env_file.seek(0)
                 env_file.writelines(env_lines)
                 env_file.truncate()
