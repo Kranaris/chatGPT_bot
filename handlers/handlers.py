@@ -111,25 +111,27 @@ async def set_user(message: types.Message, state: FSMContext):
     await message.reply("Не удалось найти переменную USERS в файле .env.")
 
 
-async def recognize_speech(message: types.Message, audio_file: types.Audio):
-    file_info = await bot.get_file(audio_file.file_id)
-    file_path = file_info.file_path
-    file_data = await bot.download_file(file_path)
-    with io.BytesIO(file_data.read()) as f:
-        with open('audio.oga', 'wb') as wav_file:
-            wav_file.write(f.getvalue())
-    wav_path = os.path.splitext('audio.oga')[0] + ".wav"
-    AudioSegment.from_file('audio.oga').export(wav_path, format="wav")
+async def recognize_speech(message: types.Message ,audio_file: types.Audio):
+    try:
+        file_info = await bot.get_file(audio_file.file_id)
+        file_path = file_info.file_path
+        file_data = await bot.download_file(file_path)
+        with io.BytesIO(file_data.read()) as f:
+            with open('audio.oga', 'wb') as wav_file:
+                wav_file.write(f.getvalue())
+        wav_path = os.path.splitext('audio.oga')[0] + ".wav"
+        AudioSegment.from_file('audio.oga').export(wav_path, format="wav")
 
-    with sr.AudioFile(wav_path) as source:
-        audio_data = r.record(source)
+        with sr.AudioFile(wav_path) as source:
+            audio_data = r.record(source)
 
-    text = r.recognize_google(audio_data, language='ru-RU')
-    os.remove('audio.oga')
-    os.remove('audio.wav')
+        text = r.recognize_google(audio_data, language='ru-RU')
+        os.remove('audio.oga')
+        os.remove('audio.wav')
 
-    return text
-
+        return text
+    except Exception as e:
+        await message.reply("e")
 
 async def voice_message_handler(message: types.Message, state: FSMContext):
     if message.from_user.id in USERS:
