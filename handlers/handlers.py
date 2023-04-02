@@ -40,7 +40,7 @@ async def get_users():
     global USERS
     with open('.env', 'r') as env_file:
         for line in env_file:
-            if line.startswith('USERS_IDS'):
+            if line.startswith('USERS'):
                 USERS = line.split('=')[1].strip().split(',')
                 USERS = {int(uid.split(':')[0]): uid.split(':')[1] for uid in USERS}
                 break
