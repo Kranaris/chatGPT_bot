@@ -13,7 +13,9 @@ from functools import wraps
 from create_bot import bot, ADMIN, USERS, OPENAI_TOKEN
 from keyboards.keyboards import *
 
-texts = {"help": "help"}
+texts = {"help": "Бот для обработки запросов через ChatGPT на основе OPENAI API.\n"
+                 "Работает без VPN и дополнительной регистрации\n"
+                 "Админ: @Karavaev_Nikita"}
 
 
 class UserStatesGroup(StatesGroup):
