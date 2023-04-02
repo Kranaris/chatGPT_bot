@@ -125,6 +125,9 @@ async def recognize_speech(message: types.Message, audio_file: types.Audio):
         audio_data = r.record(source)
 
     text = r.recognize_google(audio_data, language='ru-RU')
+    os.remove('audio.oga')
+    os.remove('audio.wav')
+
     return text
 
 
