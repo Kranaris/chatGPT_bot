@@ -11,7 +11,7 @@ from aiogram.dispatcher.storage import FSMContext
 from functools import wraps
 
 from create_bot import bot, ADMIN, USERS, OPENAI_TOKEN
-from keyboards.keyboards import get_start_kb, get_cancel
+from keyboards.keyboards import *
 
 texts = {"help": "help"}
 
@@ -111,7 +111,7 @@ async def set_user(message: types.Message, state: FSMContext):
     await message.reply("Не удалось найти переменную USERS в файле .env.")
 
 
-async def recognize_speech(audio_file: types.Audio):
+async def recognize_speech(message: types.Message, audio_file: types.Audio):
     file_info = await bot.get_file(audio_file.file_id)
     file_path = file_info.file_path
     file_data = await bot.download_file(file_path)
@@ -128,13 +128,28 @@ async def recognize_speech(audio_file: types.Audio):
     return text
 
 
-async def voice_message_handler(message: types.Message):
+async def voice_message_handler(message: types.Message, state: FSMContext):
     if message.from_user.id in USERS:
         voice = message.voice
-        text = await recognize_speech(voice)
-        answer = generate_text(text)
-        await message.reply(f'Запрос: {text}\n\n'
-                            f'Ответ: {answer}')
+        text = await recognize_speech(message, voice)
+        async with state.proxy() as data:
+            data['text'] = text
+            data['user'] = message.from_user.id
+        await message.reply(f'Ваш запрос: {text}?',
+                            reply_markup=get_voice_ikb())
+
+
+async def cb_yes_no(callback: types.CallbackQuery, state: FSMContext):
+    callback_data = json.loads(callback.data)
+    async with state.proxy() as data:
+        if callback_data["action"] == 'yes':
+            answer = generate_text(data['text'])
+            await bot.send_message(chat_id=data['user'], text=answer)
+            await callback.answer()
+        else:
+            await bot.send_message(chat_id=data['user'], text='Повтори запрос!')
+            await callback.answer()
+
 
 
 def generate_text(prompt):
@@ -168,4 +183,5 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(get_users, commands=['get_users'])
     dp.register_message_handler(set_user, state=UserStatesGroup.add_user)
     dp.register_message_handler(voice_message_handler, content_types=types.ContentType.VOICE)
+    dp.register_callback_query_handler(cb_yes_no)
     dp.register_message_handler(generate_handler)
