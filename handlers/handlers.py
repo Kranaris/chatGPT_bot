@@ -1,15 +1,17 @@
 import os
+import io
+import requests
+import speech_recognition as sr
+from pydub import AudioSegment
+
 from aiogram import types, Dispatcher
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher.storage import FSMContext
+
+from functools import wraps
+
 from create_bot import bot, ADMIN, USERS, OPENAI_TOKEN
 from keyboards.keyboards import get_start_kb, get_cancel
-from aiogram.dispatcher.storage import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from functools import wraps
-import speech_recognition as sr
-import requests
-import io
-import os
-from pydub import AudioSegment
 
 texts = {"help": "help"}
 
@@ -125,13 +127,12 @@ async def recognize_speech(audio_file: types.Audio):
     text = r.recognize_google(audio_data, language='ru-RU')
     return text
 
+
 async def voice_message_handler(message: types.Message):
     if message.from_user.id in USERS:
         voice = message.voice
         text = await recognize_speech(voice)
-        print(text)
         answer = generate_text(text)
-        print(answer)
         await message.reply(f'Запрос: {text}\n\n'
                             f'Ответ: {answer}')
 
@@ -141,11 +142,16 @@ def generate_text(prompt):
     headers = {'Authorization': f'Bearer {OPENAI_TOKEN}'}
     data = {
         'prompt': prompt,
-        'max_tokens': 200,
-        'temperature': 0.6,
+        'max_tokens': 2000,
+        'temperature': 0.9,
     }
-    response = requests.post(url, headers=headers, json=data)
-    return response.json()['choices'][0]['text']
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        choices = response.json()['choices']
+        text = choices[0]['text']
+        return text
+    except:
+        return "Ошибка"
 
 
 async def generate_handler(message: types.Message):
