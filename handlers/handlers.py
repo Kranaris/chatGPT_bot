@@ -14,7 +14,8 @@ from create_bot import bot, ADMIN, USERS, OPENAI_TOKEN
 from keyboards.keyboards import *
 
 texts = {"help": "Бот для обработки запросов через ChatGPT на основе OPENAI API.\n"
-                 "Работает без VPN и дополнительной регистрации.\n\n"
+                 "Работает без VPN и дополнительной регистрации.\n"
+                 "Возможно создавать запросы голосовым сообщением.\n\n"
                  "Админ: @Karavaev_Nikita"}
 
 
