@@ -13,6 +13,7 @@ def get_cancel() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton('/canсel'))
 
 
+
 def get_voice_ikb() -> InlineKeyboardMarkup:
     ikb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton("Да", callback_data=json.dumps({"action": "yes"}))],
