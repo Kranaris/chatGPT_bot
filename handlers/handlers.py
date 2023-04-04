@@ -109,7 +109,7 @@ async def set_user(message: types.Message, state: FSMContext):
                 await bot.send_message(message.text, f"Доспут открыт!\n"
                                                      f"Для начала работы нажми /start")
                 await state.finish()
-                await get_users(message)
+                await get_users()
                 return
     await message.reply("Не удалось найти переменную USERS в файле .env.")
 
