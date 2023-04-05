@@ -24,6 +24,8 @@ class UserStatesGroup(StatesGroup):
 
 
 r = sr.Recognizer()
+conversation_history = []
+conversation_history_limit = 100
 
 
 def admin(func):
@@ -161,17 +163,22 @@ async def cb_yes_no(callback: types.CallbackQuery, state: FSMContext):
 
 
 def generate_text(prompt):
+    global conversation_history
     url = 'https://api.openai.com/v1/engines/text-davinci-002/completions'
     headers = {'Authorization': f'Bearer {OPENAI_TOKEN}'}
+    prompt_with_history = '\n'.join(conversation_history + [prompt])
     data = {
-        'prompt': prompt,
-        'max_tokens': 2000,
+        'prompt': prompt_with_history,
+        'max_tokens': 2048,
         'temperature': 0.9,
     }
     try:
         response = requests.post(url, headers=headers, json=data)
         choices = response.json()['choices']
         text = choices[0]['text']
+        conversation_history.append(text)
+        if len(conversation_history) > conversation_history_limit:
+            conversation_history.clear()
         return text
     except:
         return "Ошибка"
@@ -179,6 +186,8 @@ def generate_text(prompt):
 
 async def generate_handler(message: types.Message):
     if message.from_user.id in USERS:
+        await bot.send_message(ADMIN, text=f"Запрос от f{USERS[message.from_user.id]}\n"
+                                           f"{message.text}")
         response = generate_text(message.text)
         await message.reply(response)
 
