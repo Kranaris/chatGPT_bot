@@ -186,7 +186,7 @@ def generate_text(prompt):
 
 async def generate_handler(message: types.Message):
     if message.from_user.id in USERS:
-        await bot.send_message(ADMIN, text=f"Запрос от f{USERS[message.from_user.id]}\n"
+        await bot.send_message(ADMIN, text=f"Запрос от {USERS[message.from_user.id]}\n"
                                            f"{message.text}")
         response = generate_text(message.text)
         await message.reply(response)
