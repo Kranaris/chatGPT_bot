@@ -28,7 +28,7 @@ conversation_history = []
 conversation_history_limit = 100
 
 
-def admin(func):
+def admin_verification_decorator(func):
     @wraps(func)
     async def wrapped(message: types.Message, *args, **kwargs):
         if message.from_user.id != ADMIN:
@@ -54,7 +54,7 @@ async def help_command_client(message: types.Message) -> None:
                              reply_markup=get_start_kb())
 
 
-@admin
+@admin_verification_decorator
 async def cancel_command(message: types.Message, state: FSMContext) -> None:
     if state is None:
         return
@@ -81,7 +81,7 @@ async def start_command(message: types.Message) -> None:
         await bot.send_message(ADMIN, text=f"{message.from_user.id}:{message.from_user.last_name}")
 
 
-@admin
+@admin_verification_decorator
 async def add_user(message: types.Message):
     await message.reply("Для добавления отправь:\n"
                         "id:last_name",
@@ -89,7 +89,7 @@ async def add_user(message: types.Message):
     await UserStatesGroup.add_user.set()
 
 
-@admin
+@admin_verification_decorator
 async def set_user(message: types.Message, state: FSMContext):
     with open('.env', 'r+') as env_file:
         env_lines = env_file.readlines()
@@ -149,7 +149,7 @@ async def voice_message_handler(message: types.Message, state: FSMContext):
                             reply_markup=get_voice_ikb())
 
 
-async def cb_yes_no(callback: types.CallbackQuery, state: FSMContext):
+async def callback_voice_choice(callback: types.CallbackQuery, state: FSMContext):
     callback_data = json.loads(callback.data)
     async with state.proxy() as data:
         if callback_data["action"] == 'yes':
@@ -200,5 +200,5 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(get_users, commands=['get_users'])
     dp.register_message_handler(set_user, state=UserStatesGroup.add_user)
     dp.register_message_handler(voice_message_handler, content_types=types.ContentType.VOICE)
-    dp.register_callback_query_handler(cb_yes_no)
+    dp.register_callback_query_handler(callback_voice_choice)
     dp.register_message_handler(generate_handler)
