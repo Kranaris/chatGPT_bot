@@ -136,7 +136,7 @@ async def recognize_speech(message: types.Message ,audio_file: types.Audio):
 
         return text
     except Exception as e:
-        await message.reply("e")
+        await message.reply(f'{e}')
 
 async def voice_message_handler(message: types.Message, state: FSMContext):
     if message.from_user.id in USERS:
@@ -180,8 +180,9 @@ def generate_text(prompt):
         if len(conversation_history) > conversation_history_limit:
             conversation_history.clear()
         return text
-    except:
-        return "Ошибка"
+    except Exception as e:
+        return f"Ошибка!\n" \
+               f"{e}"
 
 
 async def generate_handler(message: types.Message):
