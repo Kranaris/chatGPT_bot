@@ -1,6 +1,6 @@
 import os
 import io
-import requests
+import aiohttp
 import speech_recognition as sr
 from pydub import AudioSegment
 
@@ -153,7 +153,7 @@ async def callback_voice_choice(callback: types.CallbackQuery, state: FSMContext
     callback_data = json.loads(callback.data)
     async with state.proxy() as data:
         if callback_data["action"] == 'yes':
-            answer = generate_text(data['text'])
+            answer = await generate_text(data['text'])
             await bot.send_message(chat_id=data['user'], text=answer)
             await callback.answer()
         else:
@@ -162,7 +162,7 @@ async def callback_voice_choice(callback: types.CallbackQuery, state: FSMContext
 
 
 
-def generate_text(prompt):
+async def generate_text(prompt):
     global conversation_history
     url = 'https://api.openai.com/v1/engines/text-davinci-002/completions'
     headers = {'Authorization': f'Bearer {OPENAI_TOKEN}'}
@@ -173,13 +173,15 @@ def generate_text(prompt):
         'temperature': 0.9,
     }
     try:
-        response = requests.post(url, headers=headers, json=data)
-        choices = response.json()['choices']
-        text = choices[0]['text']
-        conversation_history.append(text)
-        if len(conversation_history) > conversation_history_limit:
-            conversation_history.clear()
-        return text
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=data) as response:
+                response_data = await response.json()
+                choices = response_data['choices']
+                text = choices[0]['text']
+                conversation_history.append(text)
+                if len(conversation_history) > conversation_history_limit:
+                    conversation_history.clear()
+                return text
     except Exception as e:
         return f"Ошибка!\n" \
                f"{e}"
@@ -189,7 +191,7 @@ async def generate_handler(message: types.Message):
     if message.from_user.id in USERS:
         await bot.send_message(ADMIN, text=f"Запрос от {USERS[message.from_user.id]}\n"
                                            f"{message.text}")
-        response = generate_text(message.text)
+        response = await generate_text(message.text)
         await message.reply(response)
 
 
