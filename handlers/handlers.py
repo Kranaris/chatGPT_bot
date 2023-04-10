@@ -80,6 +80,10 @@ async def start_command(message: types.Message) -> None:
                                            f"full_name: {message.from_user.full_name}\n")
         await bot.send_message(ADMIN, text=f"{message.from_user.id}:{message.from_user.last_name}")
 
+async def clean_context(message: types.Message) -> None:
+    global conversation_history
+    if message.from_user.id in USERS:
+        conversation_history = []
 
 @admin_verification_decorator
 async def add_user(message: types.Message):
@@ -199,6 +203,7 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(help_command_client, commands=['help'])
     dp.register_message_handler(cancel_command, commands=['canсel'], state="*")
     dp.register_message_handler(start_command, commands=['start'])
+    dp.register_message_handler(clean_context, commands=['clean_context'])
     dp.register_message_handler(add_user, commands=['add_user'])
     dp.register_message_handler(get_users, commands=['get_users'])
     dp.register_message_handler(set_user, state=UserStatesGroup.add_user)

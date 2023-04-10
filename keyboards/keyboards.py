@@ -4,7 +4,7 @@ import json
 def get_start_kb() -> ReplyKeyboardMarkup:
     kb = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton("/start")],
-        [KeyboardButton("/help")]
+        [KeyboardButton("/clean_context")]
     ], resize_keyboard=True)
     return kb
 
